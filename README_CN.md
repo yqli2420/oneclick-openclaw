@@ -52,7 +52,7 @@
 
 ## 普通用户
 
-从 [Releases](https://github.com/your-username/openclaw-desktop/releases) 下载 DMG，打开后将 `OpenClaw Desktop.app` 拖入 Applications。首次启动时自动安装所有依赖（Node.js、Git、pnpm）。
+从 [Releases v1.0.0](https://github.com/yqli2420/oneclick-openclaw/releases/tag/v1.0.0) 下载 DMG，打开后将 `OpenClaw Desktop.app` 拖入 Applications。首次启动时自动安装所有依赖（Node.js、Git、pnpm）。
 
 ## 开发者
 
