@@ -50,7 +50,7 @@ All prerequisites are **auto-installed** when you click "Start Setup". No manual
 
 ## For Users
 
-Download the DMG from [Releases](https://github.com/your-username/openclaw-desktop/releases), open it, and drag `OpenClaw Desktop.app` to Applications. All dependencies (Node.js, Git, pnpm) are auto-installed on first launch.
+Download the DMG from [Releases v1.0.0](https://github.com/your-username/openclaw-desktop/releases), open it, and drag `OpenClaw Desktop.app` to Applications. All dependencies (Node.js, Git, pnpm) are auto-installed on first launch.
 
 ## For Developers
 
