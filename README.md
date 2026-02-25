@@ -1,5 +1,5 @@
 # OpenClaw Desktop
-!
+
 One-click desktop launcher for [OpenClaw](https://github.com/openclaw/openclaw) — your personal AI assistant.
 
 No command line needed. Download, configure, and run OpenClaw with a single click.

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Packaged releases
+release/
+
+# macOS
+.DS_Store
+*.dmg
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Runtime settings (user-specific)
+desktop-settings.json

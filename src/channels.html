@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+  <title>OpenClaw - Channels</title>
+  <style>
+    :root {
+      --bg: #f8f9fc; --card: #fff; --text: #1a1a2e; --text2: #6b7280; --text3: #9ca3af;
+      --accent: #6366f1; --border: #e5e7eb; --input-bg: #f3f4f6;
+      --success: #10b981; --error: #ef4444; --shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f1a; --card: #1a1a2e; --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+        --border: #2d2d44; --input-bg: #252540; --shadow: 0 4px 20px rgba(0,0,0,0.3);
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+    .header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .header h1 { font-size: 22px; font-weight: 700; }
+    .back-btn { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; color: var(--text); font-weight: 500; }
+    .back-btn:hover { background: var(--border); }
+    .section { background: var(--card); border-radius: 14px; padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .section-desc { font-size: 13px; color: var(--text2); margin-bottom: 18px; }
+
+    .ch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .ch-grid { grid-template-columns: 1fr; } }
+
+    .ch-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; transition: border-color 0.2s; }
+    .ch-card.enabled { border-color: var(--success); }
+    .ch-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .ch-name { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .ch-icon { font-size: 18px; }
+    .ch-badge { font-size: 10px; padding: 2px 8px; border-radius: 5px; font-weight: 600; }
+    .ch-badge.on { background: rgba(16,185,129,0.1); color: var(--success); }
+    .ch-badge.off { background: rgba(128,128,128,0.08); color: var(--text3); }
+
+    .ch-fields { display: flex; flex-direction: column; gap: 8px; }
+    .ch-field label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .ch-field .input-wrap { position: relative; }
+    .ch-field input, .ch-field select { width: 100%; padding: 7px 32px 7px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--input-bg); color: var(--text); outline: none; font-family: "SF Mono", monospace; }
+    .ch-field input:focus { border-color: var(--accent); }
+    .ch-eye { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 13px; padding: 2px; color: var(--text3); }
+    .ch-eye:hover { color: var(--accent); }
+
+    .ch-actions { display: flex; gap: 6px; margin-top: 10px; }
+    .ch-save { padding: 6px 14px; background: var(--accent); color: white; border: none; border-radius: 7px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .ch-save:hover { background: #4f46e5; }
+    .ch-toggle { padding: 6px 14px; border-radius: 7px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 10px 22px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); display: none; z-index: 999; }
+    .toast.success { background: var(--success); color: white; display: block; }
+    .toast.error { background: var(--error); color: white; display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="back-btn" id="backBtn">&larr; Back</button>
+    <h1>Channels</h1>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Messaging Channels</div>
+    <div class="section-desc">Configure which messaging platforms connect to your assistant. Changes require a gateway restart.</div>
+    <div class="ch-grid" id="chGrid"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const CHANNELS = [
+      { id: "whatsapp", name: "WhatsApp", icon: "💬", fields: [], envHint: "Login via CLI: openclaw channels login" },
+      { id: "telegram", name: "Telegram", icon: "✈️", fields: [
+        { key: "botToken", label: "Bot Token", placeholder: "123456:ABCDEF...", type: "password" },
+      ]},
+      { id: "discord", name: "Discord", icon: "🎮", fields: [
+        { key: "token", label: "Bot Token", placeholder: "Discord bot token", type: "password" },
+      ]},
+      { id: "slack", name: "Slack", icon: "💼", fields: [
+        { key: "botToken", label: "Bot Token (SLACK_BOT_TOKEN)", placeholder: "xoxb-...", type: "password" },
+        { key: "appToken", label: "App Token (SLACK_APP_TOKEN)", placeholder: "xapp-...", type: "password" },
+      ]},
+      { id: "feishu", name: "Feishu / Lark", icon: "🐦", fields: [
+        { key: "appId", label: "App ID", placeholder: "cli_xxx", type: "text" },
+        { key: "appSecret", label: "App Secret", placeholder: "App secret", type: "password" },
+      ]},
+      { id: "signal", name: "Signal", icon: "🔒", fields: [], envHint: "Requires signal-cli setup" },
+      { id: "googlechat", name: "Google Chat", icon: "📧", fields: [], envHint: "Requires Google Chat API setup" },
+      { id: "msteams", name: "Microsoft Teams", icon: "🟦", fields: [], envHint: "Requires Teams Bot Framework setup" },
+      { id: "matrix", name: "Matrix", icon: "🟢", fields: [], envHint: "Configure via matrix extension" },
+      { id: "webchat", name: "WebChat", icon: "🌐", fields: [], envHint: "Built-in, uses gateway WebSocket" },
+    ];
+
+    const toastEl = document.getElementById("toast");
+    function showToast(msg, type) {
+      toastEl.textContent = msg;
+      toastEl.className = "toast " + type;
+      setTimeout(() => { toastEl.className = "toast"; }, 2500);
+    }
+
+    async function render() {
+      const config = await window.openclaw.getChannelsConfig();
+      const grid = document.getElementById("chGrid");
+      grid.innerHTML = "";
+
+      for (const ch of CHANNELS) {
+        const chConf = config[ch.id] || {};
+        const isEnabled = chConf.enabled === true;
+        const hasAccounts = !!chConf.accounts;
+
+        const card = document.createElement("div");
+        card.className = "ch-card" + (isEnabled || hasAccounts ? " enabled" : "");
+
+        let fieldsHtml = "";
+        if (ch.fields.length > 0) {
+          for (const f of ch.fields) {
+            let val = "";
+            if (chConf.accounts) {
+              const first = Object.values(chConf.accounts)[0];
+              if (first) val = first[f.key] || "";
+            } else {
+              val = chConf[f.key] || "";
+            }
+            const masked = val && f.type === "password" ? "••••••••" : val;
+            var eyeBtn = f.type === "password" ? '<button class="ch-eye" data-ch="' + ch.id + '" data-key="' + f.key + '">👁</button>' : '';
+            fieldsHtml += '<div class="ch-field"><label>' + f.label + '</label>'
+              + '<div class="input-wrap">'
+              + '<input type="' + f.type + '" data-ch="' + ch.id + '" data-key="' + f.key + '" placeholder="' + f.placeholder + '" value="' + (masked || "") + '"'
+              + ' onfocus="if(this.value===\'••••••••\')this.value=\'\';"'
+              + ' onblur="if(!this.value.trim()&&this.dataset.had)this.value=\'••••••••\';"'
+              + ' data-had="' + (val ? "1" : "") + '">'
+              + eyeBtn
+              + '</div></div>';
+          }
+        } else if (ch.envHint) {
+          fieldsHtml = '<div style="font-size:12px;color:var(--text3);padding:4px 0;">' + ch.envHint + '</div>';
+        }
+
+        card.innerHTML = '<div class="ch-head">'
+          + '<span class="ch-name"><span class="ch-icon">' + ch.icon + '</span>' + ch.name + '</span>'
+          + '<span class="ch-badge ' + (isEnabled || hasAccounts ? "on" : "off") + '">' + (isEnabled || hasAccounts ? "Enabled" : "Disabled") + '</span>'
+          + '</div>'
+          + '<div class="ch-fields">' + fieldsHtml + '</div>'
+          + '<div class="ch-actions">'
+          + (ch.fields.length > 0 ? '<button class="ch-save" data-ch="' + ch.id + '">Save</button>' : '')
+          + '<button class="ch-toggle" data-ch="' + ch.id + '" data-on="' + (isEnabled ? "1" : "0") + '">'
+          + (isEnabled ? "Disable" : "Enable") + '</button>'
+          + '</div>';
+        grid.appendChild(card);
+      }
+
+      grid.querySelectorAll(".ch-save").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const chId = btn.dataset.ch;
+          const inputs = grid.querySelectorAll('input[data-ch="' + chId + '"]');
+          const conf = {};
+          let hasValue = false;
+          inputs.forEach(inp => {
+            const v = inp.value.trim();
+            if (v && v !== "••••••••") {
+              conf[inp.dataset.key] = v;
+              hasValue = true;
+            }
+          });
+          if (!hasValue) { showToast("Please fill in the fields", "error"); return; }
+          conf.enabled = "true";
+          const ok = await window.openclaw.saveChannelConfig(chId, conf);
+          if (ok) { showToast(chId + " saved!", "success"); render(); }
+          else showToast("Failed to save", "error");
+        });
+      });
+
+      grid.querySelectorAll(".ch-eye").forEach(btn => {
+        btn.addEventListener("click", () => {
+          var input = btn.parentElement.querySelector("input");
+          if (input.type === "password") { input.type = "text"; btn.textContent = "🙈"; }
+          else { input.type = "password"; btn.textContent = "👁"; }
+        });
+      });
+
+      grid.querySelectorAll(".ch-toggle").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const chId = btn.dataset.ch;
+          const isOn = btn.dataset.on === "1";
+          const ok = await window.openclaw.saveChannelConfig(chId, { enabled: isOn ? "false" : "true" });
+          if (ok) { showToast(chId + (isOn ? " disabled" : " enabled"), "success"); render(); }
+          else showToast("Failed", "error");
+        });
+      });
+    }
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.openclaw.goBack();
+    });
+
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "name": "openclaw-desktop",
+  "version": "1.0.0",
+  "description": "OpenClaw Desktop — One-click launcher for OpenClaw AI Assistant",
+  "main": "dist/main.js",
+  "author": "OpenClaw Desktop",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "npm run build && electron dist/main.js",
+    "build": "tsc && cp src/*.html dist/",
+    "start": "electron dist/main.js",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux"
+  },
+  "build": {
+    "appId": "ai.openclaw.desktop",
+    "productName": "OpenClaw Desktop",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist",
+      "assets",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "dist/main.js"
+    },
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        }
+      ],
+      "darkModeSupport": true
+    },
+    "dmg": {
+      "title": "OpenClaw Desktop",
+      "contents": [
+        { "x": 130, "y": 220 },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ],
+      "window": { "width": 540, "height": 380 }
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": ["AppImage", "deb"],
+      "category": "Utility"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0"
+  }
+}

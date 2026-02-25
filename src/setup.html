@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+  <title>OpenClaw Desktop</title>
+  <style>
+    :root {
+      --bg: #f8f9fc;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --text2: #6b7280;
+      --text3: #9ca3af;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --border: #e5e7eb;
+      --input-bg: #f3f4f6;
+      --success: #10b981;
+      --error: #ef4444;
+      --warn: #f59e0b;
+      --shadow: 0 8px 32px rgba(0,0,0,0.08);
+      --progress-bg: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f1a;
+        --card: #1a1a2e;
+        --text: #e2e8f0;
+        --text2: #94a3b8;
+        --text3: #64748b;
+        --border: #2d2d44;
+        --input-bg: #252540;
+        --shadow: 0 8px 32px rgba(0,0,0,0.3);
+        --progress-bg: #2d2d44;
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      padding: 0 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 44px 40px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .logo {
+      width: 72px; height: 72px;
+      margin: 0 auto 18px;
+      background: var(--accent);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    .logo svg { width: 42px; height: 42px; }
+    .header h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    .header p { font-size: 14px; color: var(--text2); margin-top: 6px; line-height: 1.5; }
+
+    /* Steps */
+    .steps {
+      margin-bottom: 28px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-icon {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-icon.pending { background: var(--progress-bg); color: var(--text3); }
+    .step-icon.active { background: var(--accent); color: white; animation: pulse 1.5s infinite; }
+    .step-icon.done { background: var(--success); color: white; }
+    .step-icon.error { background: var(--error); color: white; }
+    .step-label { font-size: 14px; font-weight: 500; }
+    .step-label.active { color: var(--accent); font-weight: 600; }
+    .step-label.done { color: var(--success); }
+    .step-label.error { color: var(--error); }
+    .step-detail {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+      max-width: 340px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+      50% { box-shadow: 0 0 0 8px transparent; }
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      margin-bottom: 24px;
+      display: none;
+    }
+    .progress-wrap.visible { display: block; }
+    .progress-bar {
+      height: 6px;
+      background: var(--progress-bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 8px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: var(--input-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-top: 10px;
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-row .btn { flex: 1; }
+
+    /* Log viewer */
+    .log-toggle {
+      text-align: center;
+      margin-top: 16px;
+    }
+    .log-toggle a {
+      font-size: 13px;
+      color: var(--text3);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .log-toggle a:hover { color: var(--accent); }
+    .log-viewer {
+      display: none;
+      margin-top: 12px;
+      background: var(--input-bg);
+      border-radius: 10px;
+      padding: 12px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.6;
+      border: 1px solid var(--border);
+    }
+    .log-viewer.visible { display: block; }
+
+    /* Error box */
+    .error-box {
+      display: none;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--error);
+      line-height: 1.5;
+    }
+    .error-box.visible { display: block; }
+    .error-box strong { display: block; margin-bottom: 4px; }
+
+    /* Prereq warning */
+    .prereq-warn {
+      display: none;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--warn);
+      line-height: 1.5;
+    }
+    .prereq-warn.visible { display: block; }
+
+    .spinner-inline {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Check mark SVG */
+    .check { display: inline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">
+          <svg viewBox="0 0 64 64" fill="none"><path d="M12 18C12 14.686 14.686 12 18 12H46C49.314 12 52 14.686 52 18V38C52 41.314 49.314 44 46 44H38L32 54L26 44H18C14.686 44 12 41.314 12 38V18Z" fill="white"/><circle cx="25" cy="28" r="4" fill="#6366f1"/><circle cx="39" cy="28" r="4" fill="#6366f1"/><path d="M27 36C27 36 29 40 32 40C35 40 37 36 37 36" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </div>
+        <h1>OpenClaw Desktop</h1>
+        <p>One-click setup for your personal AI assistant</p>
+      </div>
+
+      <!-- Update banner -->
+      <div id="updateBanner" class="status" style="display:none; flex-direction:column; gap:6px; cursor:default;">
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+          <span style="font-size:16px;">🔄</span>
+          <span id="updateMsg">New version available</span>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <button class="btn" id="updateBtn" style="padding:6px 18px;font-size:12px;background:var(--accent);color:white;border-radius:8px;border:none;cursor:pointer;font-weight:600;">Update Now</button>
+          <button class="btn" id="skipUpdateBtn" style="padding:6px 18px;font-size:12px;background:var(--input-bg);color:var(--text);border-radius:8px;border:1px solid var(--border);cursor:pointer;">Skip</button>
+        </div>
+      </div>
+
+      <!-- Prerequisite warning -->
+      <div id="prereqWarn" class="prereq-warn"></div>
+
+      <!-- Error box -->
+      <div id="errorBox" class="error-box"></div>
+
+      <!-- Steps -->
+      <div class="steps" id="steps">
+        <div class="step" data-step="check">
+          <div class="step-icon pending" id="icon-check">1</div>
+          <div>
+            <div class="step-label" id="label-check">Check environment</div>
+            <div class="step-detail" id="detail-check">Node.js &ge; 22, Git, pnpm</div>
+          </div>
+        </div>
+        <div class="step" data-step="clone">
+          <div class="step-icon pending" id="icon-clone">2</div>
+          <div>
+            <div class="step-label" id="label-clone">Download OpenClaw</div>
+            <div class="step-detail" id="detail-clone">Clone from GitHub</div>
+          </div>
+        </div>
+        <div class="step" data-step="install">
+          <div class="step-icon pending" id="icon-install">3</div>
+          <div>
+            <div class="step-label" id="label-install">Install dependencies</div>
+            <div class="step-detail" id="detail-install">npm / pnpm install</div>
+          </div>
+        </div>
+        <div class="step" data-step="build">
+          <div class="step-icon pending" id="icon-build">4</div>
+          <div>
+            <div class="step-label" id="label-build">Build project</div>
+            <div class="step-detail" id="detail-build">Compile TypeScript &amp; UI</div>
+          </div>
+        </div>
+        <div class="step" data-step="start">
+          <div class="step-icon pending" id="icon-start">5</div>
+          <div>
+            <div class="step-label" id="label-start">Start gateway</div>
+            <div class="step-detail" id="detail-start">Launch on port 18789</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Install path -->
+      <div id="pathRow" style="margin-bottom:16px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;">Install Path</div>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="installPath" readonly style="flex:1;padding:8px 12px;font-size:12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text);font-family:'SF Mono',monospace;outline:none;cursor:default;overflow:hidden;text-overflow:ellipsis;">
+          <button id="choosePathBtn" style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;">Browse</button>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text">
+          <span id="progressMsg">Preparing...</span>
+          <span id="progressPct">0%</span>
+        </div>
+      </div>
+
+      <!-- Start button -->
+      <button class="btn btn-primary" id="startBtn">
+        Start Setup
+      </button>
+
+      <!-- Settings link + Log toggle -->
+      <div class="log-toggle" style="display:flex;justify-content:center;gap:16px;">
+        <a id="openSettingsLink">API Keys &amp; Model</a>
+        <a id="logToggle">Show logs</a>
+      </div>
+      <div class="log-viewer" id="logViewer"></div>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById("startBtn");
+    const progressWrap = document.getElementById("progressWrap");
+    const progressFill = document.getElementById("progressFill");
+    const progressMsg = document.getElementById("progressMsg");
+    const progressPct = document.getElementById("progressPct");
+    const errorBox = document.getElementById("errorBox");
+    const prereqWarn = document.getElementById("prereqWarn");
+    const logToggle = document.getElementById("logToggle");
+    const logViewer = document.getElementById("logViewer");
+
+    const STAGE_MAP = {
+      checking: "check",
+      cloning: "clone",
+      installing: "install",
+      building: "build",
+      "building-ui": "build",
+      starting: "start",
+      ready: "start",
+      error: null,
+    };
+
+    const STEP_ORDER = ["check", "clone", "install", "build", "start"];
+
+    let logsVisible = false;
+    let running = false;
+
+    logToggle.addEventListener("click", async () => {
+      logsVisible = !logsVisible;
+      logToggle.textContent = logsVisible ? "Hide logs" : "Show logs";
+      logViewer.classList.toggle("visible", logsVisible);
+      if (logsVisible) {
+        const logs = await window.openclaw.getLogs();
+        logViewer.textContent = logs.join("\n");
+        logViewer.scrollTop = logViewer.scrollHeight;
+      }
+    });
+
+    function setStepState(stepId, state, detail) {
+      const icon = document.getElementById("icon-" + stepId);
+      const label = document.getElementById("label-" + stepId);
+      const detailEl = document.getElementById("detail-" + stepId);
+
+      icon.className = "step-icon " + state;
+      label.className = "step-label " + state;
+
+      if (state === "done") {
+        icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      } else if (state === "active") {
+        icon.innerHTML = '<div class="spinner-inline"></div>';
+      } else if (state === "error") {
+        icon.innerHTML = '!';
+      }
+
+      if (detail) detailEl.textContent = detail;
+    }
+
+    function markStepsDone(upTo) {
+      const idx = STEP_ORDER.indexOf(upTo);
+      for (let i = 0; i < idx; i++) {
+        const s = STEP_ORDER[i];
+        const icon = document.getElementById("icon-" + s);
+        if (!icon.classList.contains("done") && !icon.classList.contains("error")) {
+          setStepState(s, "done");
+        }
+      }
+    }
+
+    window.openclaw.onProgress((progress) => {
+      const stepId = STAGE_MAP[progress.stage];
+
+      if (progress.stage === "error") {
+        errorBox.innerHTML = "<strong>" + progress.message + "</strong>" + (progress.detail || "");
+        errorBox.classList.add("visible");
+        startBtn.disabled = false;
+        startBtn.textContent = "Retry";
+        running = false;
+
+        // Mark current active step as error
+        for (const s of STEP_ORDER) {
+          const icon = document.getElementById("icon-" + s);
+          if (icon.classList.contains("active")) {
+            setStepState(s, "error", progress.detail);
+            break;
+          }
+        }
+        return;
+      }
+
+      errorBox.classList.remove("visible");
+
+      if (stepId) {
+        markStepsDone(stepId);
+        setStepState(stepId, progress.stage === "ready" ? "done" : "active", progress.detail);
+      }
+
+      if (progress.percent != null) {
+        progressFill.style.width = progress.percent + "%";
+        progressPct.textContent = progress.percent + "%";
+      }
+      progressMsg.textContent = progress.message;
+
+      // Update log viewer
+      if (logsVisible && progress.detail) {
+        logViewer.textContent += "\n" + progress.detail;
+        logViewer.scrollTop = logViewer.scrollHeight;
+      }
+
+      if (progress.stage === "ready") {
+        startBtn.textContent = "Opening Dashboard...";
+        for (const s of STEP_ORDER) setStepState(s, "done");
+      }
+    });
+
+    startBtn.addEventListener("click", async () => {
+      if (running) return;
+      running = true;
+      startBtn.disabled = true;
+      startBtn.innerHTML = '<div class="spinner-inline"></div> Setting up...';
+      progressWrap.classList.add("visible");
+      errorBox.classList.remove("visible");
+
+      // Reset steps
+      STEP_ORDER.forEach((s, i) => {
+        const icon = document.getElementById("icon-" + s);
+        icon.className = "step-icon pending";
+        icon.textContent = String(i + 1);
+        document.getElementById("label-" + s).className = "step-label";
+      });
+
+      await window.openclaw.startSetup();
+    });
+
+    document.getElementById("openSettingsLink").addEventListener("click", () => {
+      window.openclaw.openSettings();
+    });
+
+    document.getElementById("choosePathBtn").addEventListener("click", async () => {
+      const chosen = await window.openclaw.chooseInstallDir();
+      if (chosen) {
+        document.getElementById("installPath").value = chosen;
+      }
+    });
+
+    // Initial status check
+    (async () => {
+      const installDir = await window.openclaw.getInstallDir();
+      document.getElementById("installPath").value = installDir;
+
+      const status = await window.openclaw.getStatus();
+      if (status.gatewayRunning) {
+        startBtn.textContent = "Open Dashboard";
+        startBtn.addEventListener("click", () => window.openclaw.openGateway(), { once: true });
+        for (const s of STEP_ORDER) setStepState(s, "done");
+        return;
+      }
+
+      if (status.installed && status.built) {
+        startBtn.textContent = "Start Gateway";
+        document.getElementById("pathRow").style.display = "none";
+        setStepState("check", "done");
+        setStepState("clone", "done");
+        setStepState("install", "done");
+        setStepState("build", "done");
+
+        // Check for updates in background
+        window.openclaw.checkForUpdates().then(function(info) {
+          if (info.hasUpdate) {
+            var banner = document.getElementById("updateBanner");
+            var msg = document.getElementById("updateMsg");
+            var detail = "v" + (info.localVersion || "?") + " → v" + (info.remoteVersion || "?");
+            if (info.localCommit && info.remoteCommit) {
+              detail += "  (" + info.localCommit + " → " + info.remoteCommit + ")";
+            }
+            msg.textContent = "New version available: " + detail;
+            banner.style.display = "flex";
+            banner.style.background = "rgba(99,102,241,0.08)";
+            banner.style.border = "1px solid rgba(99,102,241,0.2)";
+            banner.style.color = "var(--accent)";
+            banner.style.borderRadius = "10px";
+            banner.style.padding = "12px 16px";
+            banner.style.marginBottom = "16px";
+
+            document.getElementById("updateBtn").addEventListener("click", async function() {
+              if (running) return;
+              running = true;
+              banner.style.display = "none";
+              startBtn.disabled = true;
+              startBtn.innerHTML = '<div class="spinner-inline"></div> Updating...';
+              progressWrap.classList.add("visible");
+              STEP_ORDER.forEach(function(s, i) {
+                var icon = document.getElementById("icon-" + s);
+                icon.className = "step-icon pending";
+                icon.textContent = String(i + 1);
+                document.getElementById("label-" + s).className = "step-label";
+              });
+              await window.openclaw.doUpdate();
+            });
+
+            document.getElementById("skipUpdateBtn").addEventListener("click", function() {
+              banner.style.display = "none";
+            });
+          }
+        }).catch(function() {});
+      }
+
+      // Check prerequisites
+      const prereqs = await window.openclaw.checkPrerequisites();
+      if (!prereqs.ok) {
+        prereqWarn.innerHTML =
+          "⚠️ Missing: <strong>" + prereqs.missing.join(", ") + "</strong><br>" +
+          "Please install them before continuing.";
+        prereqWarn.classList.add("visible");
+      }
+    })();
+  </script>
+</body>
+</html>

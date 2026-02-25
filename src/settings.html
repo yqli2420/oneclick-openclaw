@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+  <title>OpenClaw - Settings</title>
+  <style>
+    :root {
+      --bg: #f8f9fc; --card: #fff; --text: #1a1a2e; --text2: #6b7280; --text3: #9ca3af;
+      --accent: #6366f1; --accent2: #818cf8; --border: #e5e7eb; --input-bg: #f3f4f6;
+      --success: #10b981; --error: #ef4444; --warn: #f59e0b; --shadow: 0 4px 20px rgba(0,0,0,0.06);
+      --tag-bg: #eef2ff; --tag-text: #4338ca;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f1a; --card: #1a1a2e; --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+        --border: #2d2d44; --input-bg: #252540; --shadow: 0 4px 20px rgba(0,0,0,0.3);
+        --tag-bg: #1e1b4b; --tag-text: #a5b4fc;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px;
+    }
+    .header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+    .header h1 { font-size: 22px; font-weight: 700; }
+    .back-btn {
+      background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 16px; font-size: 13px; cursor: pointer; color: var(--text); font-weight: 500;
+    }
+    .back-btn:hover { background: var(--border); }
+    .section { background: var(--card); border-radius: 14px; padding: 28px; margin-bottom: 20px;
+      box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .section-desc { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+
+    .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 700px) { .provider-grid { grid-template-columns: 1fr; } }
+
+    .provider-card {
+      border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .provider-card.configured { border-color: var(--success); }
+    .provider-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .provider-name { font-size: 14px; font-weight: 600; }
+    .provider-status {
+      font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;
+    }
+    .provider-status.ok { background: rgba(16,185,129,0.1); color: var(--success); }
+    .provider-status.missing { background: rgba(239,68,68,0.08); color: var(--error); }
+    .provider-env { font-size: 11px; color: var(--text3); margin-bottom: 8px; font-family: "SF Mono", monospace; }
+
+    .key-input-row { display: flex; gap: 6px; }
+    .key-input-wrap { flex: 1; position: relative; }
+    .key-input {
+      width: 100%; padding: 8px 36px 8px 12px; font-size: 13px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--input-bg); color: var(--text); outline: none;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .key-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
+    .key-input::placeholder { color: var(--text3); }
+    .eye-btn {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: 14px; padding: 4px;
+      color: var(--text3); line-height: 1;
+    }
+    .eye-btn:hover { color: var(--accent); }
+    .save-key-btn {
+      padding: 8px 14px; background: var(--accent); color: white; border: none; border-radius: 8px;
+      font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .save-key-btn:hover { background: #4f46e5; }
+    .save-key-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Model section */
+    .model-section { margin-top: 16px; }
+    .model-label { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+    .model-select {
+      width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--input-bg); color: var(--text); outline: none;
+      cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    .model-select:focus { border-color: var(--accent); }
+    .model-current { font-size: 13px; color: var(--text2); margin-top: 8px; }
+    .model-current strong { color: var(--accent); font-weight: 600; }
+
+    .model-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .model-tag {
+      font-size: 11px; padding: 3px 10px; border-radius: 6px; font-weight: 500;
+      background: var(--tag-bg); color: var(--tag-text);
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15); display: none; z-index: 999;
+      transition: opacity 0.3s;
+    }
+    .toast.success { background: var(--success); color: white; display: block; }
+    .toast.error { background: var(--error); color: white; display: block; }
+
+    .hint { font-size: 12px; color: var(--text3); margin-top: 6px; line-height: 1.5; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="back-btn" id="backBtn">&larr; Back</button>
+    <h1>Settings</h1>
+  </div>
+
+  <!-- Model Selection -->
+  <div class="section">
+    <div class="section-title">Model Selection</div>
+    <div class="section-desc">Choose the AI model for your assistant. The model must have a valid API key configured below.</div>
+    <div class="model-current" id="currentModel">Current: <strong>loading...</strong></div>
+    <div class="model-section">
+      <div class="model-label">Primary Model</div>
+      <select class="model-select" id="modelSelect">
+        <optgroup label="OpenAI">
+          <option value="openai/gpt-5.1-codex">GPT-5.1 Codex</option>
+          <option value="openai/gpt-5.1">GPT-5.1</option>
+          <option value="openai/gpt-4.1">GPT-4.1</option>
+          <option value="openai/gpt-4.1-mini">GPT-4.1 Mini</option>
+          <option value="openai/gpt-4.1-nano">GPT-4.1 Nano</option>
+          <option value="openai/o3">o3</option>
+          <option value="openai/o4-mini">o4-mini</option>
+        </optgroup>
+        <optgroup label="Anthropic">
+          <option value="anthropic/claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="anthropic/claude-sonnet-4-6">Claude Sonnet 4.6</option>
+          <option value="anthropic/claude-haiku-3-5">Claude Haiku 3.5</option>
+        </optgroup>
+        <optgroup label="Google">
+          <option value="google/gemini-3-pro-preview">Gemini 3 Pro</option>
+          <option value="google/gemini-3-flash-preview">Gemini 3 Flash</option>
+          <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+        </optgroup>
+        <optgroup label="DeepSeek">
+          <option value="deepseek/deepseek-r1">DeepSeek R1</option>
+          <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
+        </optgroup>
+        <optgroup label="xAI">
+          <option value="xai/grok-4">Grok 4</option>
+          <option value="xai/grok-3">Grok 3</option>
+        </optgroup>
+        <optgroup label="Doubao (Volcengine)">
+          <option value="volcengine/doubao-pro-256k">Doubao Pro 256K</option>
+          <option value="volcengine/doubao-lite-128k">Doubao Lite 128K</option>
+        </optgroup>
+        <optgroup label="Qianfan (Baidu)">
+          <option value="qianfan/deepseek-v3.2">DeepSeek V3.2 (Qianfan)</option>
+          <option value="qianfan/ernie-5.0-thinking-preview">ERNIE 5.0 Thinking</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="groq/llama-3.3-70b-versatile">Groq Llama 3.3 70B</option>
+          <option value="mistral/mistral-large-latest">Mistral Large</option>
+          <option value="openrouter/auto">OpenRouter Auto</option>
+        </optgroup>
+      </select>
+      <button class="save-key-btn" id="saveModelBtn" style="margin-top: 10px; width: 100%;">Save Model</button>
+    </div>
+  </div>
+
+  <!-- API Keys -->
+  <div class="section">
+    <div class="section-title">API Keys</div>
+    <div class="section-desc">Configure API keys for the providers you want to use. Keys are stored in <code>~/.openclaw/.env</code>.</div>
+
+    <div class="provider-grid" id="providerGrid"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const PROVIDERS = [
+      { id: "openai", name: "OpenAI", envVar: "OPENAI_API_KEY", placeholder: "sk-...", models: ["gpt-5.1-codex", "gpt-5.1", "gpt-4.1", "o3", "o4-mini"] },
+      { id: "anthropic", name: "Anthropic", envVar: "ANTHROPIC_API_KEY", placeholder: "sk-ant-...", models: ["claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-3.5"] },
+      { id: "google", name: "Google (Gemini)", envVar: "GEMINI_API_KEY", placeholder: "AIza...", models: ["gemini-3-pro", "gemini-2.5-pro", "gemini-2.5-flash"] },
+      { id: "deepseek", name: "DeepSeek", envVar: "DEEPSEEK_API_KEY", placeholder: "sk-...", models: ["deepseek-r1", "deepseek-chat"] },
+      { id: "xai", name: "xAI (Grok)", envVar: "XAI_API_KEY", placeholder: "xai-...", models: ["grok-4", "grok-3"] },
+      { id: "volcengine", name: "Doubao (Volcengine)", envVar: "VOLCANO_ENGINE_API_KEY", placeholder: "API Key", models: ["doubao-pro-256k"] },
+      { id: "groq", name: "Groq", envVar: "GROQ_API_KEY", placeholder: "gsk_...", models: ["llama-3.3-70b-versatile"] },
+      { id: "mistral", name: "Mistral", envVar: "MISTRAL_API_KEY", placeholder: "API Key", models: ["mistral-large-latest"] },
+      { id: "openrouter", name: "OpenRouter", envVar: "OPENROUTER_API_KEY", placeholder: "sk-or-...", models: ["auto"] },
+      { id: "qianfan", name: "Qianfan (Baidu)", envVar: "QIANFAN_API_KEY", placeholder: "API Key", models: ["deepseek-v3.2", "ernie-5.0"] },
+      { id: "moonshot", name: "Moonshot (Kimi)", envVar: "MOONSHOT_API_KEY", placeholder: "sk-...", models: ["kimi-k2.5"] },
+      { id: "nvidia", name: "NVIDIA", envVar: "NVIDIA_API_KEY", placeholder: "nvapi-...", models: ["llama-3.1-nemotron-70b"] },
+    ];
+
+    const grid = document.getElementById("providerGrid");
+    const toastEl = document.getElementById("toast");
+
+    function showToast(msg, type) {
+      toastEl.textContent = msg;
+      toastEl.className = "toast " + type;
+      setTimeout(() => { toastEl.className = "toast"; }, 2500);
+    }
+
+    function renderProviders(envKeys) {
+      grid.innerHTML = "";
+      for (const p of PROVIDERS) {
+        const hasKey = !!(envKeys[p.envVar] || "").trim();
+        const card = document.createElement("div");
+        card.className = "provider-card" + (hasKey ? " configured" : "");
+        card.innerHTML = `
+          <div class="provider-header">
+            <span class="provider-name">${p.name}</span>
+            <span class="provider-status ${hasKey ? "ok" : "missing"}">${hasKey ? "Configured" : "Not set"}</span>
+          </div>
+          <div class="provider-env">${p.envVar}</div>
+          <div class="key-input-row">
+            <div class="key-input-wrap">
+              <input class="key-input" type="password" placeholder="${p.placeholder}" value="${hasKey ? "••••••••" : ""}" data-env="${p.envVar}" data-has="${hasKey ? 1 : 0}" onfocus="if(this.value==='••••••••')this.value='';" onblur="if(!this.value.trim()&&this.dataset.has==='1')this.value='••••••••';">
+              <button class="eye-btn" data-env="${p.envVar}" title="Show/Hide">👁</button>
+            </div>
+            <button class="save-key-btn" data-env="${p.envVar}">Save</button>
+          </div>
+          <div class="model-tags">${p.models.map(m => '<span class="model-tag">' + m + '</span>').join("")}</div>
+        `;
+        grid.appendChild(card);
+      }
+
+      grid.querySelectorAll(".save-key-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const envVar = btn.dataset.env;
+          const input = grid.querySelector('input[data-env="' + envVar + '"]');
+          const value = input.value.trim();
+          if (!value || value === "••••••••") {
+            showToast("Please enter a valid key", "error");
+            return;
+          }
+          btn.disabled = true;
+          btn.textContent = "Saving...";
+          const ok = await window.openclaw.saveEnvKey(envVar, value);
+          btn.disabled = false;
+          btn.textContent = "Save";
+          if (ok) {
+            showToast(envVar + " saved!", "success");
+            input.value = "••••••••";
+            btn.closest(".provider-card").classList.add("configured");
+            btn.closest(".provider-card").querySelector(".provider-status").className = "provider-status ok";
+            btn.closest(".provider-card").querySelector(".provider-status").textContent = "Configured";
+          } else {
+            showToast("Failed to save", "error");
+          }
+        });
+      });
+
+      grid.querySelectorAll(".eye-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const envVar = btn.dataset.env;
+          const input = grid.querySelector('input[data-env="' + envVar + '"]');
+          if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "🙈";
+          } else {
+            input.type = "password";
+            btn.textContent = "👁";
+          }
+        });
+      });
+    }
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.openclaw.goBack();
+    });
+
+    document.getElementById("saveModelBtn").addEventListener("click", async () => {
+      const model = document.getElementById("modelSelect").value;
+      const btn = document.getElementById("saveModelBtn");
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+      const ok = await window.openclaw.saveModel(model);
+      btn.disabled = false;
+      btn.textContent = "Save Model";
+      if (ok) {
+        showToast("Model set to " + model, "success");
+        document.getElementById("currentModel").innerHTML = "Current: <strong>" + model + "</strong>";
+      } else {
+        showToast("Failed to save model", "error");
+      }
+    });
+
+    (async () => {
+      const config = await window.openclaw.getConfig();
+      if (config.model) {
+        document.getElementById("currentModel").innerHTML = "Current: <strong>" + config.model + "</strong>";
+        document.getElementById("modelSelect").value = config.model;
+      }
+      renderProviders(config.envKeys || {});
+    })();
+  </script>
+</body>
+</html>

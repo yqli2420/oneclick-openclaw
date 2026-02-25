@@ -1,0 +1,37 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="100%" style="stop-color:#dc2626"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+  <!-- Lobster claw -->
+  <g transform="translate(512,460)" fill="none" stroke="#fff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left claw arm -->
+    <path d="M-55,-100 C-140,-190 -270,-175 -295,-70 C-315,30 -230,90 -150,65 C-95,48 -75,10 -55,-25"/>
+    <!-- Left claw inner -->
+    <path d="M-55,-100 C-110,-165 -195,-190 -250,-150"/>
+    <!-- Right claw arm -->
+    <path d="M55,-100 C140,-190 270,-175 295,-70 C315,30 230,90 150,65 C95,48 75,10 55,-25"/>
+    <!-- Right claw inner -->
+    <path d="M55,-100 C110,-165 195,-190 250,-150"/>
+    <!-- Body -->
+    <path d="M-55,-25 C-55,55 -38,130 0,170 C38,130 55,55 55,-25"/>
+    <!-- Head -->
+    <path d="M-55,-100 C-35,-125 35,-125 55,-100"/>
+    <!-- Eyes -->
+    <circle cx="-28" cy="-68" r="15" fill="#fff" stroke="none"/>
+    <circle cx="28" cy="-68" r="15" fill="#fff" stroke="none"/>
+    <circle cx="-28" cy="-68" r="8" fill="#dc2626" stroke="none"/>
+    <circle cx="28" cy="-68" r="8" fill="#dc2626" stroke="none"/>
+    <!-- Legs -->
+    <path d="M-46,38 L-105,88"/>
+    <path d="M-40,68 L-95,125"/>
+    <path d="M46,38 L105,88"/>
+    <path d="M40,68 L95,125"/>
+    <!-- Antennae -->
+    <path d="M-30,-120 C-45,-170 -70,-185 -85,-175" stroke-width="28"/>
+    <path d="M30,-120 C45,-170 70,-185 85,-175" stroke-width="28"/>
+  </g>
+</svg>
