@@ -34,11 +34,29 @@
 
 ## 环境要求
 
-- **Node.js >= 22** — [下载](https://nodejs.org/)
-- **Git** — [下载](https://git-scm.com/)
-- **pnpm** — 安装命令：`npm install -g pnpm`
+所有依赖会在点击 "Start Setup" 时**自动安装**，无需手动配置。
 
-## 快速开始
+| 平台 | Git | Node.js 22 | pnpm |
+|------|-----|-----------|------|
+| **macOS** | Homebrew / xcode-select | Homebrew / nvm | npm / corepack |
+| **Windows** | winget / choco | winget / choco / MSI | npm / standalone |
+| **Linux** | apt / dnf / pacman | apt / dnf / nvm | npm / corepack |
+
+<details>
+<summary>手动安装（自动安装失败时）</summary>
+
+- **macOS**: `brew install git node@22 && npm install -g pnpm`
+- **Windows**: `winget install Git.Git OpenJS.NodeJS` 然后 `npm install -g pnpm`
+- **Linux**: `sudo apt install git nodejs npm && npm install -g pnpm`（或用 [nvm](https://github.com/nvm-sh/nvm)）
+</details>
+
+## 普通用户
+
+从 [Releases](https://github.com/your-username/openclaw-desktop/releases) 下载 DMG，打开后将 `OpenClaw Desktop.app` 拖入 Applications。首次启动时自动安装所有依赖（Node.js、Git、pnpm）。
+
+## 开发者
+
+> 从源码构建需要预装 Node.js >= 18。[下载 Node.js](https://nodejs.org/)
 
 ```bash
 git clone https://github.com/your-username/openclaw-desktop.git

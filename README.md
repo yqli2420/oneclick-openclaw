@@ -32,11 +32,29 @@ No command line needed. Download, configure, and run OpenClaw with a single clic
 
 ## Prerequisites
 
-- **Node.js >= 22** — [Download](https://nodejs.org/)
-- **Git** — [Download](https://git-scm.com/)
-- **pnpm** — Install with `npm install -g pnpm`
+All prerequisites are **auto-installed** when you click "Start Setup". No manual setup required.
 
-## Quick Start
+| Platform | Git | Node.js 22 | pnpm |
+|----------|-----|-----------|------|
+| **macOS** | Homebrew / xcode-select | Homebrew / nvm | npm / corepack |
+| **Windows** | winget / choco | winget / choco / MSI | npm / standalone |
+| **Linux** | apt / dnf / pacman | apt / dnf / nvm | npm / corepack |
+
+<details>
+<summary>Manual installation (if auto-install fails)</summary>
+
+- **macOS**: `brew install git node@22 && npm install -g pnpm`
+- **Windows**: `winget install Git.Git OpenJS.NodeJS` then `npm install -g pnpm`
+- **Linux**: `sudo apt install git nodejs npm && npm install -g pnpm` (or use [nvm](https://github.com/nvm-sh/nvm))
+</details>
+
+## For Users
+
+Download the DMG from [Releases](https://github.com/your-username/openclaw-desktop/releases), open it, and drag `OpenClaw Desktop.app` to Applications. All dependencies (Node.js, Git, pnpm) are auto-installed on first launch.
+
+## For Developers
+
+> Requires Node.js >= 18 to build from source. [Download Node.js](https://nodejs.org/)
 
 ```bash
 git clone https://github.com/your-username/openclaw-desktop.git

@@ -14,7 +14,7 @@ addEventListener("message", (event: MessageEvent) => {
 
 contextBridge.exposeInMainWorld("openclaw", {
   startSetup: (): Promise<boolean> => ipcRenderer.invoke("start-setup"),
-  checkPrerequisites: (): Promise<{ ok: boolean; missing: string[] }> =>
+  checkPrerequisites: (): Promise<{ ok: boolean; missing: string[]; canAutoInstall: boolean }> =>
     ipcRenderer.invoke("check-prerequisites"),
   getStatus: (): Promise<{
     installed: boolean;

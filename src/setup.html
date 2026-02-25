@@ -577,9 +577,13 @@
       // Check prerequisites
       const prereqs = await window.openclaw.checkPrerequisites();
       if (!prereqs.ok) {
-        prereqWarn.innerHTML =
-          "⚠️ Missing: <strong>" + prereqs.missing.join(", ") + "</strong><br>" +
-          "Please install them before continuing.";
+        var msg = "⚠️ Missing: <strong>" + prereqs.missing.join(", ") + "</strong><br>";
+        if (prereqs.canAutoInstall) {
+          msg += 'Click <strong>Start Setup</strong> to auto-install everything.';
+        } else {
+          msg += 'Please install them manually before continuing.';
+        }
+        prereqWarn.innerHTML = msg;
         prereqWarn.classList.add("visible");
       }
     })();

@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "OpenClaw Desktop — One-click launcher for OpenClaw AI Assistant",
   "main": "dist/main.js",
-  "author": "OpenClaw Desktop",
+  "author": {
+    "name": "OpenClaw Desktop",
+    "email": "openclaw-desktop@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/nicekwell/openclaw-desktop",
   "license": "MIT",
   "private": true,
   "scripts": {
