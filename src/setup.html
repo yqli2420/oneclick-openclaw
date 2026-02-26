@@ -281,7 +281,7 @@
       <div id="updateBanner" class="status" style="display:none; flex-direction:column; gap:6px; cursor:default;">
         <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
           <span style="font-size:16px;">🔄</span>
-          <span id="updateMsg">New version available</span>
+          <span id="updateMsg">OpenClaw New version available</span>
         </div>
         <div style="display:flex;gap:8px;justify-content:center;">
           <button class="btn" id="updateBtn" style="padding:6px 18px;font-size:12px;background:var(--accent);color:white;border-radius:8px;border:none;cursor:pointer;font-weight:600;">Update Now</button>
@@ -542,7 +542,7 @@
             if (info.localCommit && info.remoteCommit) {
               detail += "  (" + info.localCommit + " → " + info.remoteCommit + ")";
             }
-            msg.textContent = "New version available: " + detail;
+            msg.textContent = "OpenClaw New version available: " + detail;
             banner.style.display = "flex";
             banner.style.background = "rgba(99,102,241,0.08)";
             banner.style.border = "1px solid rgba(99,102,241,0.2)";
