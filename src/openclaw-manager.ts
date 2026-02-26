@@ -979,6 +979,22 @@ export class OpenClawManager {
       for (const [key, value] of Object.entries(settings)) {
         if (key === "enabled") {
           config.channels[channel].enabled = value === "true";
+        } else if (key === "dmPolicy") {
+          config.channels[channel].dmPolicy = value;
+          if (value === "open") {
+            const existing = config.channels[channel].allowFrom || [];
+            if (!existing.includes("*")) {
+              config.channels[channel].allowFrom = ["*", ...existing];
+            }
+          }
+        } else if (key === "appId" || key === "appSecret") {
+          if (!config.channels[channel].accounts) config.channels[channel].accounts = {};
+          if (!config.channels[channel].accounts.main) config.channels[channel].accounts.main = {};
+          if (value === "") {
+            delete config.channels[channel].accounts.main[key];
+          } else {
+            config.channels[channel].accounts.main[key] = value;
+          }
         } else if (value === "") {
           delete config.channels[channel][key];
         } else {
