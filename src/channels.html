@@ -87,6 +87,11 @@
       { id: "feishu", name: "Feishu / Lark", icon: "🐦", fields: [
         { key: "appId", label: "App ID", placeholder: "cli_xxx", type: "text" },
         { key: "appSecret", label: "App Secret", placeholder: "App secret", type: "password" },
+        { key: "dmPolicy", label: "DM Policy", placeholder: "", type: "select", options: [
+          { value: "open", label: "Open (no verification)" },
+          { value: "pairing", label: "Pairing (require approval)" },
+          { value: "allowlist", label: "Allowlist (specific users)" },
+        ]},
       ]},
       { id: "signal", name: "Signal", icon: "🔒", fields: [], envHint: "Requires signal-cli setup" },
       { id: "googlechat", name: "Google Chat", icon: "📧", fields: [], envHint: "Requires Google Chat API setup" },
@@ -107,7 +112,16 @@
       const grid = document.getElementById("chGrid");
       grid.innerHTML = "";
 
-      for (const ch of CHANNELS) {
+      // Sort: configured channels first
+      const sorted = [...CHANNELS].sort(function(a, b) {
+        var aConf = config[a.id] || {};
+        var bConf = config[b.id] || {};
+        var aOn = aConf.enabled === true || !!aConf.accounts ? 1 : 0;
+        var bOn = bConf.enabled === true || !!bConf.accounts ? 1 : 0;
+        return bOn - aOn;
+      });
+
+      for (const ch of sorted) {
         const chConf = config[ch.id] || {};
         const isEnabled = chConf.enabled === true;
         const hasAccounts = !!chConf.accounts;
@@ -125,16 +139,21 @@
             } else {
               val = chConf[f.key] || "";
             }
-            const masked = val && f.type === "password" ? "••••••••" : val;
-            var eyeBtn = f.type === "password" ? '<button class="ch-eye" data-ch="' + ch.id + '" data-key="' + f.key + '">👁</button>' : '';
-            fieldsHtml += '<div class="ch-field"><label>' + f.label + '</label>'
-              + '<div class="input-wrap">'
-              + '<input type="' + f.type + '" data-ch="' + ch.id + '" data-key="' + f.key + '" placeholder="' + f.placeholder + '" value="' + (masked || "") + '"'
-              + ' onfocus="if(this.value===\'••••••••\')this.value=\'\';"'
-              + ' onblur="if(!this.value.trim()&&this.dataset.had)this.value=\'••••••••\';"'
-              + ' data-had="' + (val ? "1" : "") + '">'
-              + eyeBtn
-              + '</div></div>';
+            if (f.type === "select") {
+              var optionsHtml = f.options.map(function(o) {
+                return '<option value="' + o.value + '"' + (val === o.value ? ' selected' : '') + '>' + o.label + '</option>';
+              }).join("");
+              fieldsHtml += '<div class="ch-field"><label>' + f.label + '</label>'
+                + '<select data-ch="' + ch.id + '" data-key="' + f.key + '">' + optionsHtml + '</select>'
+                + '</div>';
+            } else {
+              var eyeBtn = '<button class="ch-eye" data-ch="' + ch.id + '" data-key="' + f.key + '">🙈</button>';
+              fieldsHtml += '<div class="ch-field"><label>' + f.label + '</label>'
+                + '<div class="input-wrap">'
+                + '<input type="text" data-ch="' + ch.id + '" data-key="' + f.key + '" placeholder="' + f.placeholder + '" value="' + (val || "") + '">'
+                + eyeBtn
+                + '</div></div>';
+            }
           }
         } else if (ch.envHint) {
           fieldsHtml = '<div style="font-size:12px;color:var(--text3);padding:4px 0;">' + ch.envHint + '</div>';
@@ -157,6 +176,7 @@
         btn.addEventListener("click", async () => {
           const chId = btn.dataset.ch;
           const inputs = grid.querySelectorAll('input[data-ch="' + chId + '"]');
+          const selects = grid.querySelectorAll('select[data-ch="' + chId + '"]');
           const conf = {};
           let hasValue = false;
           inputs.forEach(inp => {
@@ -165,6 +185,10 @@
               conf[inp.dataset.key] = v;
               hasValue = true;
             }
+          });
+          selects.forEach(sel => {
+            conf[sel.dataset.key] = sel.value;
+            hasValue = true;
           });
           if (!hasValue) { showToast("Please fill in the fields", "error"); return; }
           conf.enabled = "true";
@@ -177,8 +201,8 @@
       grid.querySelectorAll(".ch-eye").forEach(btn => {
         btn.addEventListener("click", () => {
           var input = btn.parentElement.querySelector("input");
-          if (input.type === "password") { input.type = "text"; btn.textContent = "🙈"; }
-          else { input.type = "password"; btn.textContent = "👁"; }
+          if (input.type === "text") { input.type = "password"; btn.textContent = "👁"; }
+          else { input.type = "text"; btn.textContent = "🙈"; }
         });
       });
 
